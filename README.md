@@ -20,7 +20,7 @@
 ## 1. リポジトリ構成
 
 ```text
-local-llm-demo/
+local-llm-ws/
 ├── .gitignore
 ├── README.md   ← このファイル
 ├── setup.sh    ← llama.cpp ビルド＋モデルDL (bash)
@@ -35,8 +35,8 @@ local-llm-demo/
 
 ```bash
 # 1️⃣ クローン
-$ git clone https://github.com/<yourname>/local-llm-demo.git
-$ cd local-llm-demo
+$ git clone https://github.com/<yourname>/local-llm-ws.git
+$ cd local-llm-ws
 
 # 2️⃣ 一発セットアップ (10〜15 分)
 $ bash setup.sh
