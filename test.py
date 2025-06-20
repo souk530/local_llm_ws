@@ -1,12 +1,19 @@
 import requests
 
-response = requests.post(
-    'http://localhost:11434/api/generate',
-    json={
-        'model': 'deepseek-coder:8b',
-        'prompt': '日本語で説明してください：量子化とは何ですか？'
-    },
-    stream=True
-)
-for chunk in response.iter_lines():
-    print(chunk.decode(), end='')
+def chat_ollama(prompt, model="phi3"):
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json={
+            "model": model,
+            "prompt": prompt,
+            "stream": False
+        }
+    )
+    response.raise_for_status()
+    res_json = response.json()
+    return res_json.get("response", "").strip()
+
+if __name__ == "__main__":
+    prompt = input("ユーザー: ")
+    answer = chat_ollama(prompt)
+    print("AI:", answer)

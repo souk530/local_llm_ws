@@ -27,5 +27,18 @@
 ## 2. モデルダウンロード
 
 ```bash
-ollama pull deepseek-coder:8b
+ollama pull phi3
+ollama run phi3
+
+
+仮想環境の作成
+python -m venv .venv
+
+仮想環境の有効化
+.venv\Scripts\activate
+→ (.venv) PS C:\Users\~~~~~~~\local_llm_ws>
+
+必要なライブラリをインストール
+ pip install requests
+
 
