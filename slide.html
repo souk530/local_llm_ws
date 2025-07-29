@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ローカルLLM体験ワークショップ：Ollama & DeepSeek編</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 固定目次 */
+        .toc-fixed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.98);
+            border: 2px solid #1e3a8a;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 320px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(30, 58, 138, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .toc-fixed h3 {
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: 700;
+            border-bottom: 2px solid #dbeafe;
+            padding-bottom: 8px;
+        }
+
+        .toc-fixed ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc-fixed li {
+            margin: 5px 0;
+        }
+
+        .toc-fixed a {
+            text-decoration: none;
+            color: #1e40af;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .toc-fixed a:hover {
+            background: #1e3a8a;
+            color: white;
+            transform: translateX(4px);
+        }
+
+        /* セクション */
+        .section {
+            background: white;
+            margin: 40px 0;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 10px 30px rgba(30, 58, 138, 0.08);
+            scroll-margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .section.title-section {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section.title-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .section.title-section h1 {
+            color: white;
+            border-bottom: 3px solid white;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #1e3a8a;
+            font-size: clamp(1.8em, 4vw, 2.5em);
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 20px;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: #1e40af;
+            font-size: clamp(1.4em, 3vw, 2em);
+            margin: 30px 0 20px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        h3 {
+            color: #1e40af;
+            font-size: clamp(1.2em, 2.5vw, 1.5em);
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+
+        p, li {
+            font-size: clamp(1em, 2vw, 1.2em);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        .formula {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.9em, 2vw, 1.1em);
+            overflow-x: auto;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.08);
+        }
+
+        .example {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+            border-left: 4px solid #1e40af;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 0 2px 8px rgba(30, 58, 138, 0.1);
+        }
+
+        .flow-chart {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border: 2px solid #1e40af;
+            border-radius: 16px;
+            padding: 35px 25px;
+            margin: 30px 0;
+            text-align: center;
+            overflow-x: auto;
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.1);
+        }
+
+        .flow-step {
+            background: white;
+            border: 2px solid #1e40af;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin: 15px auto;
+            display: inline-block;
+            min-width: 200px;
+            max-width: 90%;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+            font-weight: 600;
+            font-size: clamp(0.9em, 2vw, 1.1em);
+            color: #1e3a8a;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(30, 58, 138, 0.2);
+        }
+
+        .flow-arrow {
+            font-size: clamp(1.2em, 3vw, 1.5em);
+            color: #1e40af;
+            margin: 12px 0;
+            font-weight: bold;
+        }
+
+        .flow-description {
+            font-size: clamp(0.8em, 1.8vw, 0.9em);
+            color: #64748b;
+            font-style: italic;
+            margin: 8px 0;
+            font-weight: 500;
+        }
+
+        .agent-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .agent-horizontal {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .agent-horizontal .flow-step {
+            margin: 5px;
+            min-width: 140px;
+        }
+
+        .agent-horizontal .flow-arrow {
+            margin: 0 5px;
+            font-size: clamp(1em, 2.5vw, 1.3em);
+        }
+
+        .toc-item {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            margin: 15px 0;
+            padding: 20px;
+            border-left: 4px solid #1e40af;
+            border-radius: 0 12px 12px 0;
+            font-size: clamp(1em, 2vw, 1.1em);
+            box-shadow: 0 2px 8px rgba(30, 58, 138, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .toc-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.12);
+        }
+
+        .toc-item ul {
+            margin-top: 10px;
+            font-size: clamp(0.9em, 1.8vw, 1em);
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 図解スタイル */
+        .diagram {
+            background: white;
+            border: 2px solid #1e40af;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.1);
+        }
+
+        .vector-coordinate-space {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 20px auto;
+            border: 2px solid #1e40af;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .coordinate-axis {
+            position: absolute;
+        }
+
+        .x-axis {
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: #64748b;
+        }
+
+        .y-axis {
+            left: 20px;
+            top: 20px;
+            bottom: 20px;
+            width: 2px;
+            background: #64748b;
+        }
+
+        .axis-label {
+            position: absolute;
+            font-size: 0.8em;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .x-label {
+            bottom: -25px;
+            right: 0;
+        }
+
+        .y-label {
+            top: -20px;
+            left: -15px;
+            transform: rotate(90deg);
+        }
+
+        .vector-point {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            line-height: 1.1;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .vector-point:hover {
+            transform: scale(1.15);
+            z-index: 10;
+        }
+
+        .vector-point.query {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            border: 3px solid #dc2626;
+        }
+
+        .vector-point.similar {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            border: 3px solid #059669;
+        }
+
+        .vector-point.dissimilar {
+            background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+            border: 3px solid #6b7280;
+        }
+
+        .vector-point.medium {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            border: 3px solid #d97706;
+        }
+
+        .coordinate-info {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            color: #64748b;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .distance-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, #dc2626, #059669);
+            transform-origin: left center;
+            opacity: 0.7;
+        }
+
+        .distance-label {
+            position: absolute;
+            font-size: 0.7em;
+            color: #1e40af;
+            background: rgba(255,255,255,0.9);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .attention-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .attention-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .attention-cell.high {
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        }
+
+        .attention-cell.medium {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        }
+
+        .attention-cell.low {
+            background: linear-gradient(135deg, #93c5fd 0%, #dbeafe 100%);
+            color: #1e40af;
+        }
+
+        .attention-cell:hover {
+            transform: scale(1.05);
+        }
+
+        .rag-pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: stretch;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .pipeline-step {
+            flex: 1;
+            min-width: 200px;
+            max-width: 280px;
+            background: white;
+            border: 2px solid #1e40af;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-step:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.15);
+        }
+
+        .pipeline-step h4 {
+            color: #1e40af;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .pipeline-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #1e40af;
+        }
+
+        .vector-similarity-demo {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            margin: 25px 0;
+            gap: 20px;
+        }
+
+        .similarity-example {
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            box-shadow: 0 2px 8px rgba(30, 58, 138, 0.08);
+        }
+
+        .similarity-score {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .similarity-score.high { color: #059669; }
+        .similarity-score.medium { color: #d97706; }
+        .similarity-score.low { color: #dc2626; }
+
+        /* モバイル対応 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .section {
+                padding: 20px;
+                margin: 20px 0;
+            }
+
+            .toc-fixed {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 20px 0;
+                max-width: 100%;
+            }
+
+            .agent-horizontal {
+                flex-direction: column;
+            }
+
+            .agent-horizontal .flow-arrow {
+                transform: rotate(90deg);
+            }
+
+            ul, ol {
+                margin-left: 20px;
+            }
+
+            .vector-space, .rag-pipeline, .vector-similarity-demo {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .attention-matrix {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 300px;
+            }
+        }
+
+        /* スクロールバーのスタイル */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e40af;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1e3a8a;
+        }
+    </style>
+</head>
+<body>
+    <!-- 固定目次 -->
+    <nav class="toc-fixed">
+        <h3>目次</h3>
+        <ul>
+            <li><a href="#title">タイトル</a></li>
+            <li><a href="#toc">目次</a></li>
+            <li><a href="#intro">1. はじめに</a></li>
+            <li><a href="#llm">2. LLM</a>
+                <ul>
+                    <li><a href="#llm-basic">2.1 基本</a></li>
+                    <li><a href="#llm-transformer">2.2 Transformer</a></li>
+                    <li><a href="#llm-vector">2.3 ベクトル</a></li>
+                    <li><a href="#llm-importance">2.4 重要性</a></li>
+                </ul>
+            </li>
+            <li><a href="#rag">3. RAG</a>
+                <ul>
+                    <li><a href="#rag-need">3.1 必要性</a></li>
+                    <li><a href="#rag-idea">3.2 基本アイデア</a></li>
+                    <li><a href="#rag-search">3.3 ベクトル検索</a></li>
+                    <li><a href="#rag-flow">3.4 全体の流れ</a></li>
+                    <li><a href="#rag-merit">3.5 メリット</a></li>
+                    <li><a href="#rag-summary">3.6 まとめ</a></li>
+                </ul>
+            </li>
+            <li><a href="#agent">4. AIエージェント</a>
+                <ul>
+                    <li><a href="#agent-framework">4.1 フレームワーク</a></li>
+                    <li><a href="#agent-application">4.2 応用</a></li>
+                    <li><a href="#agent-evolution">4.3 進化</a></li>
+                    <li><a href="#agent-future">4.4 将来性</a></li>
+                    <li><a href="#agent-summary">4.5 まとめ</a></li>
+                </ul>
+            </li>
+            <li><a href="#conclusion">5. まとめ</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- タイトルセクション -->
+        <section id="title" class="section title-section">
+            <h1>ローカルLLM体験ワークショップ</h1>
+            <h2>Ollama & DeepSeek編</h2>
+            <div class="image-container">
+                <img src="./demo-image/ollama.png" alt="構成図" style="max-height: 300px;">
+            </div>
+            <p style="font-size: 1.3em; margin-top: 30px;">LLM・RAG・AIエージェントの基礎と実践</p>
+        </section>
+
+        <!-- 目次セクション -->
+        <section id="toc" class="section">
+            <h1>目次</h1>
+            <div class="toc-item">1. はじめに - 本資料の目的と全体像</div>
+            <div class="toc-item">2. LLM（大規模言語モデル）とは
+                <ul>
+                    <li>どんなものか（応用事例）</li>
+                    <li>TransformerとAttentionの仕組み</li>
+                    <li>簡単な数式とベクトルによる説明</li>
+                    <li>ベクトル表現がなぜ重要か</li>
+                </ul>
+            </div>
+            <div class="toc-item">3. RAG（Retrieval Augmented Generation）とは
+                <ul>
+                    <li>なぜRAGが必要か（LLMだけの限界）</li>
+                    <li>ベクトル検索と外部知識の活用</li>
+                    <li>LLMとRAGのつながり・流れ</li>
+                </ul>
+            </div>
+            <div class="toc-item">4. AIエージェントとは
+                <ul>
+                    <li>エージェントの基本フレームワーク</li>
+                    <li>できること・主な応用</li>
+                    <li>LLM／RAGとの組み合わせ</li>
+                    <li>今後の展望・将来性</li>
+                </ul>
+            </div>
+            <div class="toc-item">5. まとめ</div>
+        </section>
+
+        <!-- はじめにセクション -->
+        <section id="intro" class="section">
+            <h1>1. はじめに</h1>
+            <h3>本資料の目的</h3>
+            <p>ローカル環境でLLMを動作させ、最新のAI技術の基礎を理解する</p>
+            
+            <h3>全体像</h3>
+            <ul>
+                <li><strong>LLM</strong>：大規模言語モデルの基本原理</li>
+                <li><strong>RAG</strong>：外部知識を活用した生成技術</li>
+                <li><strong>AIエージェント</strong>：自律的に行動するAIシステム</li>
+            </ul>
+
+            <div class="example">
+                <strong>今日の体験：</strong>Ollamaを使ってDeepSeek Coderモデルをローカルで実行し、これらの技術の実際の動作を確認します
+            </div>
+        </section>
+
+        <!-- LLMセクション -->
+        <section id="llm" class="section">
+            <h1>2. LLM（大規模言語モデル）とは</h1>
+        </section>
+
+        <section id="llm-basic" class="section">
+            <h2>2.1 LLMとは何か？</h2>
+            
+            <p><strong>LLM（Large Language Model）</strong>は、膨大なテキストデータを学習して自然言語の理解・生成ができるAIモデル。</p>
+            
+            <h3>代表例</h3>
+            <p>ChatGPT、Claude、Gemini、DeepSeek Coderなど</p>
+            
+            <h3>応用例</h3>
+            <ul>
+                <li>チャットボット</li>
+                <li>自動要約</li>
+                <li>検索</li>
+                <li>コード生成</li>
+                <li>翻訳</li>
+            </ul>
+        </section>
+
+        <section id="llm-transformer" class="section">
+            <h2>2.2 TransformerとAttentionの仕組み</h2>
+            
+            <p>2017年にGoogleが発表したTransformerアーキテクチャがベース。</p>
+            
+            <h3>Transformerの革新</h3>
+            <p>全文を一度に処理し、「文脈（文のどこが重要か）」を動的に重み付けする。</p>
+            <p>これを「<strong>Attention（注意機構）</strong>」と呼ぶ。</p>
+            
+            <div class="formula">
+                <strong>Attentionの基本式</strong><br>
+                Attention(Q,K,V) = softmax(QK<sup>T</sup>/√d<sub>k</sub>)V
+            </div>
+            
+            <ul>
+                <li><strong>Q</strong>（Query）：入力単語のベクトル</li>
+                <li><strong>K</strong>（Key）：各単語の「意味」を表すベクトル</li>
+                <li><strong>V</strong>（Value）：各単語の「値」</li>
+                <li><strong>softmax</strong>：重要度（重み）を計算して合計1にする</li>
+            </ul>
+            
+            <div class="diagram">
+                <h4 style="color: #1e40af; margin-bottom: 20px;">Attentionの重み付けマトリックス</h4>
+                <p style="margin-bottom: 15px; font-size: 0.9em;">「猫が魚を食べる」の例</p>
+                <div class="attention-matrix">
+                    <div class="attention-cell high">猫→猫<br>1.0</div>
+                    <div class="attention-cell medium">猫→が<br>0.3</div>
+                    <div class="attention-cell low">猫→魚<br>0.1</div>
+                    <div class="attention-cell medium">猫→を<br>0.2</div>
+                    <div class="attention-cell medium">が→猫<br>0.4</div>
+                    <div class="attention-cell high">が→が<br>0.8</div>
+                    <div class="attention-cell low">が→魚<br>0.0</div>
+                    <div class="attention-cell high">が→を<br>0.9</div>
+                    <div class="attention-cell medium">魚→猫<br>0.6</div>
+                    <div class="attention-cell low">魚→が<br>0.1</div>
+                    <div class="attention-cell high">魚→魚<br>1.0</div>
+                    <div class="attention-cell high">魚→を<br>0.7</div>
+                    <div class="attention-cell medium">食→猫<br>0.5</div>
+                    <div class="attention-cell medium">食→が<br>0.3</div>
+                    <div class="attention-cell high">食→魚<br>0.8</div>
+                    <div class="attention-cell high">食→食<br>1.0</div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #64748b;">濃い青 = 高い注意度、薄い青 = 低い注意度</p>
+            </div>
+            
+            <p><strong>意味：</strong>それぞれの単語同士の関係を「ベクトルの類似度（内積）」で計算し、重要な単語ほど大きな重みを付けて情報を取り出す仕組み。</p>
+        </section>
+
+        <section id="llm-vector" class="section">
+            <h2>2.3 ベクトルと意味の関係</h2>
+            
+            <p>単語や文を「<strong>ベクトル（数値の並び）</strong>」で表現する（＝埋め込み）。</p>
+            
+            <div class="example">
+                <strong>例：</strong>[0.1, 0.3, -0.2, ...]
+            </div>
+            
+            <div class="diagram">
+                <h4 style="color: #1e40af; margin-bottom: 20px;">ベクトル空間での意味クラスタリング</h4>
+                <div class="vector-coordinate-space">
+                    <!-- 座標軸 -->
+                    <div class="coordinate-axis x-axis">
+                        <div class="axis-label x-label">意味次元1</div>
+                    </div>
+                    <div class="coordinate-axis y-axis">
+                        <div class="axis-label y-label">意味次元2</div>
+                    </div>
+                    
+                    <!-- 動物クラスタ -->
+                    <div class="vector-point similar" style="left: 120px; top: 280px;">
+                        猫
+                        <div class="coordinate-info">(1.7, 1.2)</div>
+                    </div>
+                    
+                    <div class="vector-point similar" style="left: 140px; top: 260px;">
+                        犬
+                        <div class="coordinate-info">(1.9, 1.4)</div>
+                    </div>
+                    
+                    <div class="vector-point similar" style="left: 100px; top: 300px;">
+                        鳥
+                        <div class="coordinate-info">(1.5, 1.0)</div>
+                    </div>
+                    
+                    <!-- 乗り物クラスタ -->
+                    <div class="vector-point medium" style="left: 280px; top: 120px;">
+                        車
+                        <div class="coordinate-info">(3.8, 3.2)</div>
+                    </div>
+                    
+                    <div class="vector-point medium" style="left: 300px; top: 140px;">
+                        電車
+                        <div class="coordinate-info">(4.0, 3.0)</div>
+                    </div>
+                    
+                    <div class="vector-point medium" style="left: 260px; top: 100px;">
+                        飛行機
+                        <div class="coordinate-info">(3.6, 3.4)</div>
+                    </div>
+                    
+                    <!-- 食べ物クラスタ -->
+                    <div class="vector-point dissimilar" style="left: 240px; top: 320px;">
+                        りんご
+                        <div class="coordinate-info">(3.2, 0.8)</div>
+                    </div>
+                    
+                    <div class="vector-point dissimilar" style="left: 260px; top: 300px;">
+                        パン
+                        <div class="coordinate-info">(3.4, 1.0)</div>
+                    </div>
+                    
+                    <!-- クラスタ間の距離線 -->
+                    <div class="distance-line" style="left: 160px; top: 275px; width: 140px; transform: rotate(-35deg); opacity: 0.3;">
+                        <div class="distance-label" style="top: -20px; left: 60px;">2.8</div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #64748b;">同じカテゴリの単語（動物、乗り物、食べ物）は座標空間で近い位置にクラスタリングされる</p>
+            </div>
+            
+            <p>ベクトルの内積や距離が「意味の近さ」「関連性」を表す。</p>
+            
+            <h3>重要なポイント</h3>
+            <p>類似した意味の単語 → ベクトルも近い</p>
+            
+            <div class="example">
+                <strong>【例】</strong><br>
+                「猫」と「犬」のベクトルは近いが、<br>
+                「猫」と「車」は遠い。
+            </div>
+        </section>
+
+        <section id="llm-importance" class="section">
+            <h2>2.4 ベクトル表現が重要な理由</h2>
+            
+            <ul>
+                <li>検索・分類・要約・生成など、多くのAIタスクで「ベクトル空間上の操作」が本質的</li>
+                <li>ベクトルの計算が高速＆大規模並列できるため、AIの高度な推論・応答が現実に</li>
+            </ul>
+            
+            <h3>2.5 応用と限界</h3>
+            <ul>
+                <li>事前知識が膨大でも、「知っていること」しか答えられない</li>
+                <li>最新の情報や個別の知識は得意ではない</li>
+            </ul>
+            
+            <div class="example">
+                <strong>ここが次章（RAG）につながる！</strong>
+            </div>
+        </section>
+
+        <!-- RAGセクション -->
+        <section id="rag" class="section">
+            <h1>3. RAG（Retrieval Augmented Generation）とは</h1>
+        </section>
+
+        <section id="rag-need" class="section">
+            <h2>3.1 なぜRAGが必要か？（LLMだけの限界）</h2>
+            
+            <ul>
+                <li>LLMは学習時点までの知識しか持っていない</li>
+                <li>最新情報や会社独自の知識、個別データへの対応が苦手</li>
+            </ul>
+            
+            <div class="example">
+                <strong>たとえば：</strong><br>
+                「今朝のニュース」「社内規定」などはLLM単体では答えられない
+            </div>
+        </section>
+
+        <section id="rag-idea" class="section">
+            <h2>3.2 RAGの基本アイデア</h2>
+            
+            <p><strong>RAG（検索拡張生成）</strong>は、「外部知識」をLLMに組み合わせて答えを生成する技術。</p>
+            
+            <h3>やり方：</h3>
+            <ol>
+                <li><strong>まず検索：</strong><br>
+                ユーザーの質問をベクトル化して、外部のデータベース（例：社内文書、論文DB、Web記事など）から関連情報を検索</li>
+                
+                <li><strong>次に生成：</strong><br>
+                検索で得た情報＋元の質問をLLMに入力し、文脈に合った回答を生成</li>
+            </ol>
+        </section>
+
+        <section id="rag-search" class="section">
+            <h2>3.3 ベクトル検索の仕組み</h2>
+            
+            <p>LLMと同様、<strong>文書や質問を「ベクトル化」</strong>して扱う。</p>
+            
+            <p><strong>ベクトルの距離（コサイン類似度など）</strong>を使い、意味的に近い文書を高速検索。</p>
+            
+            <div class="diagram">
+                <h4 style="color: #1e40af; margin-bottom: 20px;">2次元ベクトル空間での類似度検索</h4>
+                <div class="vector-coordinate-space">
+                    <!-- 座標軸 -->
+                    <div class="coordinate-axis x-axis">
+                        <div class="axis-label x-label">次元1</div>
+                    </div>
+                    <div class="coordinate-axis y-axis">
+                        <div class="axis-label y-label">次元2</div>
+                    </div>
+                    
+                    <!-- ベクトル点 -->
+                    <div class="vector-point query" style="left: 180px; top: 200px;">
+                        質問<br>AI動向
+                        <div class="coordinate-info">(2.5, 1.8)</div>
+                    </div>
+                    
+                    <div class="vector-point similar" style="left: 220px; top: 180px;">
+                        関連<br>AI技術
+                        <div class="coordinate-info">(3.1, 2.1)</div>
+                    </div>
+                    
+                    <div class="vector-point medium" style="left: 160px; top: 160px;">
+                        中程度<br>技術革新
+                        <div class="coordinate-info">(2.2, 2.4)</div>
+                    </div>
+                    
+                    <div class="vector-point dissimilar" style="left: 80px; top: 320px;">
+                        無関係<br>料理
+                        <div class="coordinate-info">(1.0, 0.8)</div>
+                    </div>
+                    
+                    <div class="vector-point dissimilar" style="left: 320px; top: 80px;">
+                        無関係<br>スポーツ
+                        <div class="coordinate-info">(4.2, 3.8)</div>
+                    </div>
+                    
+                    <!-- 距離線 -->
+                    <div class="distance-line" style="left: 210px; top: 215px; width: 45px; transform: rotate(-25deg);">
+                        <div class="distance-label" style="top: -20px; left: 15px;">0.85</div>
+                    </div>
+                    
+                    <div class="distance-line" style="left: 180px; top: 215px; width: 130px; transform: rotate(35deg); background: linear-gradient(90deg, #dc2626, #6b7280);">
+                        <div class="distance-label" style="top: -20px; left: 60px;">2.1</div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #64748b;">座標が近い点ほど意味的に類似。赤い線は実際の距離（ユークリッド距離）を表示</p>
+            </div>
+            
+            <div class="vector-similarity-demo">
+                <div class="similarity-example">
+                    <div>「猫」⟷「犬」</div>
+                    <div class="similarity-score high">0.85</div>
+                    <div style="font-size: 0.8em; color: #64748b;">高い類似度</div>
+                </div>
+                <div class="similarity-example">
+                    <div>「猫」⟷「動物」</div>
+                    <div class="similarity-score medium">0.65</div>
+                    <div style="font-size: 0.8em; color: #64748b;">中程度</div>
+                </div>
+                <div class="similarity-example">
+                    <div>「猫」⟷「車」</div>
+                    <div class="similarity-score low">0.12</div>
+                    <div style="font-size: 0.8em; color: #64748b;">低い類似度</div>
+                </div>
+            </div>
+            
+            <div class="formula">
+                <strong>ベクトル検索の数式（コサイン類似度）</strong><br>
+                cos(θ) = (a·b) / (||a|| × ||b||)<br><br>
+                <strong>a</strong>：質問のベクトル<br>
+                <strong>b</strong>：文書のベクトル<br>
+                値が1に近いほど「意味が近い」
+            </div>
+        </section>
+
+        <section id="rag-flow" class="section">
+            <h2>3.4 RAG全体の流れ</h2>
+            
+            <div class="diagram">
+                <h4 style="color: #1e40af; margin-bottom: 20px;">RAGパイプライン詳細図</h4>
+                <div class="rag-pipeline">
+                    <div class="pipeline-step">
+                        <div class="pipeline-icon">❓</div>
+                        <h4>1. ユーザー質問</h4>
+                        <p style="font-size: 0.9em;">「最新のAI動向は？」</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="pipeline-icon">🔢</div>
+                        <h4>2. ベクトル化</h4>
+                        <p style="font-size: 0.9em;">[0.1, 0.3, -0.2, ...]<br>数値ベクトルに変換</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="pipeline-icon">🔍</div>
+                        <h4>3. 類似度検索</h4>
+                        <p style="font-size: 0.9em;">データベースから<br>関連文書を検索</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="pipeline-icon">📄</div>
+                        <h4>4. 関連情報取得</h4>
+                        <p style="font-size: 0.9em;">上位3-5件の<br>関連文書を取得</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="pipeline-icon">🤖</div>
+                        <h4>5. LLM生成</h4>
+                        <p style="font-size: 0.9em;">質問+関連情報を<br>元に回答生成</p>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="pipeline-icon">💬</div>
+                        <h4>6. 回答出力</h4>
+                        <p style="font-size: 0.9em;">根拠ある<br>正確な回答</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="rag-merit" class="section">
+            <h2>3.5 RAGのメリットと応用</h2>
+            
+            <p>最新情報、独自データ、個別情報にも対応できる。</p>
+            
+            <h3>たとえば：</h3>
+            <ul>
+                <li>社内QA</li>
+                <li>マニュアル検索</li>
+                <li>論文要約</li>
+                <li>FAQ</li>
+                <li>法令検索</li>
+                <li>医療・製薬データ対応</li>
+            </ul>
+            
+            <p>LLM単体よりも「正確な情報」「根拠ある回答」がしやすい。</p>
+        </section>
+
+        <section id="rag-summary" class="section">
+            <h2>3.6 LLM × RAGのまとめ</h2>
+            
+            <ul>
+                <li><strong>LLM</strong>＝言語の理解と生成が得意</li>
+                <li><strong>RAG</strong>＝必要な知識を外から取ってきて賢く使う</li>
+            </ul>
+            
+            <div class="example">
+                <strong>この組み合わせが「業務利用」「専門領域」など本格的なAI活用のカギ！</strong>
+            </div>
+            
+            <p>次章では、RAG/LLMの進化形として期待される「AIエージェント」の概念とフレームワークについて解説します。</p>
+        </section>
+
+        <!-- AIエージェントセクション -->
+        <section id="agent" class="section">
+            <h1>4. AIエージェントとは</h1>
+        </section>
+
+        <section id="agent-framework" class="section">
+            <h2>4.1 AIエージェントの基本フレームワーク</h2>
+            
+            <p>AIエージェントとは、「<strong>目的達成のために自律的に判断・行動するAIシステム</strong>」。</p>
+            
+            <h3>一般的なフレームワーク：</h3>
+            <ul>
+                <li><strong>観察（Observation）</strong>：外部から情報を受け取る</li>
+                <li><strong>判断・計画（Planning）</strong>：目的に沿って最適な行動を決定</li>
+                <li><strong>実行（Action）</strong>：実際に行動を起こす</li>
+                <li><strong>学習・適応（Learning）</strong>：結果から学び、次に活かす</li>
+            </ul>
+            
+            <div class="flow-chart">
+                <div class="agent-flow">
+                    <div class="flow-step">外部環境/ユーザー</div>
+                    <div class="flow-arrow">↓</div>
+                    
+                    <div class="agent-horizontal">
+                        <div class="flow-step">観察</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">判断・計画</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">実行</div>
+                    </div>
+                    
+                    <div class="agent-horizontal">
+                        <div class="flow-arrow">↑</div>
+                        <div style="width: 40px;"></div>
+                        <div class="flow-arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">学習・適応</div>
+                    <div class="flow-description">（結果をフィードバック）</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="agent-application" class="section">
+            <h2>4.2 できること・主な応用例</h2>
+            
+            <ul>
+                <li><strong>対話型エージェント</strong>：カスタマーサポート、FAQ、自動応答など</li>
+                <li><strong>業務自動化</strong>：書類処理、メール自動化、データ収集と要約、RPAとの連携</li>
+                <li><strong>知識探索・分析</strong>：大量の文書から重要な情報をピックアップ、レポート生成</li>
+                <li><strong>複数タスクの自律実行</strong>：ToDoを分解・進行管理し、ゴールまで自動で進める</li>
+                <li><strong>外部ツールとの連携</strong>：カレンダー予約、API実行、データベース操作など</li>
+            </ul>
+        </section>
+
+        <section id="agent-evolution" class="section">
+            <h2>4.3 LLM／RAGとの関係と進化</h2>
+            
+            <h3>従来：</h3>
+            <p>LLMやRAGは「質問に答える」「1回きりの応答」が中心</p>
+            
+            <h3>エージェント：</h3>
+            <p>「複数の行動を自動でつなげる」「目標に向かい継続的に対話・実行」が可能</p>
+            
+            <h3>例：</h3>
+            <ul>
+                <li>旅行プランを自動で立てて予約まで完結</li>
+                <li>複雑な問い合わせを自動で解決</li>
+                <li>文献調査、要約、レポート化まで自動化</li>
+            </ul>
+            
+            <div class="example">
+                <strong>LLM/RAGの能力を「連続的な自律行動」にまで拡張するのがエージェント</strong>
+            </div>
+        </section>
+
+        <section id="agent-future" class="section">
+            <h2>4.4 将来性・今後の展望</h2>
+            
+            <ul>
+                <li><strong>さらなる自律化・知能化</strong>：人間に近い「自己判断」「自己改善」を目指す</li>
+                <li><strong>現実世界との連携</strong>：IoT、ロボティクス、リアルな意思決定への応用拡大</li>
+                <li><strong>複数エージェントの協調</strong>：複数のAIが協力し合って大規模な問題解決</li>
+            </ul>
+            
+            <h3>ビジネス・社会実装：</h3>
+            <ul>
+                <li>業務の自動化（AI事務員、AI秘書、AIリサーチャー）</li>
+                <li>パーソナルAI（個人専属アシスタント）</li>
+                <li>新しいサービス・プロダクトの創出</li>
+            </ul>
+        </section>
+
+        <section id="agent-summary" class="section">
+            <h2>4.5 まとめ</h2>
+            
+            <ul>
+                <li>AIエージェントは「<strong>目標達成型AI</strong>」のフレームワーク</li>
+                <li>LLM・RAGと連携することで実用範囲が一気に広がっている</li>
+                <li>今後、より高度な自律化・現実世界連携・協調が進み、AI社会の中核技術へ</li>
+            </ul>
+            
+            <div class="example">
+                <strong>まとめ：</strong>LLM・RAG・AIエージェントの関係と応用イメージが掴めれば、最新のAI動向を理解・活用する大きな武器になります！
+            </div>
+        </section>
+
+        <!-- 最終まとめセクション -->
+        <section id="conclusion" class="section">
+            <h1>5. まとめ</h1>
+            
+            <h3>今日学んだこと</h3>
+            <ul>
+                <li><strong>LLM</strong>：Transformerアーキテクチャとベクトル表現による言語理解</li>
+                <li><strong>RAG</strong>：外部知識を活用した情報検索と生成の融合</li>
+                <li><strong>AIエージェント</strong>：自律的な判断・行動による目標達成システム</li>
+            </ul>
+            
+            <h3>実践体験</h3>
+            <p>Ollamaを使ったローカルLLMの動作確認</p>
+            
+            <div class="example">
+                <strong>次のステップ：</strong><br>
+                これらの技術を組み合わせて、実際のプロジェクトやビジネス課題の解決に活用してみましょう！
+            </div>
+            
+            <p style="text-align: center; font-size: 1.5em; margin-top: 40px; color: #e74c3c;"><strong>ありがとうございました！</strong></p>
+        </section>
+    </div>
+
+    <script>
+        // スムーズスクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 目次のアクティブ状態管理
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc-fixed a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (scrollY >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocLinks.forEach(link => {
+                link.style.background = '';
+                link.style.color = '';
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.style.background = '#1e3a8a';
+                    link.style.color = 'white';
+                    link.style.transform = 'translateX(4px)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
