@@ -366,3 +366,7 @@ nvm use 18
 
 ---
 
+nvmインストール前
+```bash
+Set-ExecutionPolicy RemoteSigned -Scope Process
+```
