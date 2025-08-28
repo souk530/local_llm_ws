@@ -374,3 +374,12 @@ Set-ExecutionPolicy RemoteSigned -Scope Process
 ```bash
 .\setup-node.ps1
 ```
+
+nvmインストールリンク
+```
+https://github.com/coreybutler/nvm-windows/releases
+```
+```bash
+nvm install 20.11.1
+```
+
