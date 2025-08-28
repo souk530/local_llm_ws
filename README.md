@@ -136,3 +136,180 @@ local_llm_ws/
 4. **応用課題** - オリジナル機能の実装
 
 準備完了したら講師にお声かけください！
+
+
+
+---
+了解です！😊
+PowerShellで **`git clone`** を実行するためには、以下の準備が必要です。
+「初めてPowerShellでGitを使う」前提で、インストールから設定、SSH鍵まで詳しく解説します。
+
+---
+
+## **全体の流れ**
+
+1. **Gitのインストール**
+2. **PowerShellでGitコマンドが使えるか確認**
+3. **ユーザー情報の設定（必須）**
+4. **SSHキーまたはHTTPS認証の準備**
+5. **`git clone` の実行**
+6. **トラブルシューティング**
+
+---
+
+## **1. Gitのインストール**
+
+### **方法①：wingetでインストール（推奨）**
+
+Windows 10以降ならPowerShellから一発でインストールできます。
+
+```powershell
+winget install --id Git.Git -e --source winget
+```
+
+### **方法②：公式サイトからインストール**
+
+* [https://git-scm.com/download/win](https://git-scm.com/download/win)
+* インストーラーを実行 → 「Git BashをPATHに追加」にチェック ✅
+
+---
+
+## **2. PowerShellでGitコマンドが使えるか確認**
+
+PowerShellを開いて以下を実行：
+
+```powershell
+git --version
+```
+
+* 例：`git version 2.46.0`
+  → 表示されればOK
+* 「`git` が認識されません」と出た場合 → PATH設定が必要なので、再インストール時に **“Add Git to PATH”** を有効にする
+
+---
+
+## **3. ユーザー情報の設定（必須）**
+
+初めてGitを使う場合、ユーザー名とメールアドレスを設定します。
+
+```powershell
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+設定を確認するには：
+
+```powershell
+git config --list
+```
+
+---
+
+## **4. 認証方法の準備**
+
+### **① HTTPSでcloneする場合（簡単）**
+
+GitHubやGitLabのリポジトリURLをHTTPSで指定すれば、最初の一回だけユーザー名とパスワードを入力すればOK。
+
+例：
+
+```powershell
+git clone https://github.com/username/repo.git
+```
+
+ただし2021年以降、GitHubは**パスワード認証が廃止**されたため、**Personal Access Token (PAT)** を使う必要があります。
+
+PATの発行方法：
+
+* GitHub → **Settings** → **Developer settings** → **Personal access tokens**
+* 「repo」スコープを付与 → 発行されたトークンをHTTPSパスワードとして使う
+
+---
+
+### **② SSHでcloneする場合（おすすめ）**
+
+#### **SSHキーを作成**
+
+```powershell
+ssh-keygen -t rsa -b 4096 -C "you@example.com"
+```
+
+Enterを3回押せば `C:\Users\<ユーザー名>\.ssh\id_rsa` に鍵が作られます。
+
+#### **公開鍵をGitHubに登録**
+
+```powershell
+cat ~/.ssh/id_rsa.pub
+```
+
+* 出てきたキーをコピー
+* GitHub → **Settings** → **SSH and GPG keys** → **New SSH key** → 貼り付け
+
+#### **SSH接続をテスト**
+
+```powershell
+ssh -T git@github.com
+```
+
+「Hi username! You’ve successfully authenticated」と出ればOK。
+
+#### **SSHでclone**
+
+```powershell
+git clone git@github.com:username/repo.git
+```
+
+---
+
+## **5. git clone の実行**
+
+プロジェクトを保存したいディレクトリに移動して実行：
+
+```powershell
+cd C:\Users\YourName\Documents
+git clone https://github.com/username/repo.git
+```
+
+またはSSH版：
+
+```powershell
+git clone git@github.com:username/repo.git
+```
+
+cloneが終わったら移動：
+
+```powershell
+cd repo
+```
+
+---
+
+## **6. トラブルシューティング**
+
+| エラー                             | 原因         | 対策                                               |
+| ------------------------------- | ---------- | ------------------------------------------------ |
+| `git: command not found`        | Git未インストール | wingetまたは公式サイトからインストール                           |
+| `Permission denied (publickey)` | SSHキー未設定   | SSHキーを生成＆GitHubに登録                               |
+| `Authentication failed`         | HTTPSで認証失敗 | PATを使う or SSH接続に切り替え                             |
+| `SSL certificate problem`       | 企業ネットワークなど | `git config --global http.sslVerify false`（自己責任） |
+
+---
+
+## **まとめ**
+
+| 作業          | コマンド例                                            |
+| ----------- | ------------------------------------------------ |
+| Gitインストール   | `winget install --id Git.Git -e --source winget` |
+| バージョン確認     | `git --version`                                  |
+| ユーザー設定      | `git config --global user.name "Your Name"`      |
+| HTTPS clone | `git clone https://github.com/username/repo.git` |
+| SSH鍵生成      | `ssh-keygen -t rsa -b 4096 -C "you@example.com"` |
+| SSH clone   | `git clone git@github.com:username/repo.git`     |
+
+---
+
+もし希望があれば、**PowerShell専用の自動セットアップスクリプト**を書いて、
+「Gitインストール → SSH鍵生成 → GitHub登録URLを開く → clone実行」まで自動化できます。
+
+これ、やりますか？
+
