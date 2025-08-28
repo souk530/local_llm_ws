@@ -370,3 +370,7 @@ nvmインストール前
 ```bash
 Set-ExecutionPolicy RemoteSigned -Scope Process
 ```
+実行コマンド
+```bash
+.\setup-node.ps1
+```
