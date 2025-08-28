@@ -34,6 +34,13 @@ brew install ollama
 
 ![インストール画面](./demo-image/image.png)
 
+### gitのインストール
+winget install --id Git.Git -e --source winget
+
+#### powershellで確認
+git --version
+
+
 ### 2️⃣ LLMモデルのダウンロード
 
 コマンドプロンプト/ターミナルで実行：
