@@ -14,56 +14,139 @@
 
 ---
 
-## 🚀 セットアップ手順
+## 🚀 環境構築手順
 
-### 1️⃣ Ollamaのインストール
+### 1️⃣ Googleアカウントの作成・ログイン
+[Google](https://accounts.google.com/)でアカウントを作成またはログインしてください。
 
-[公式サイトからダウンロード](https://ollama.com/download)
+**確認方法:**
+- Googleサービスにアクセスできることを確認
 
-**Windows の場合:**
-1. `ollama-windows.exe` をダウンロード
-2. ダブルクリックで実行
-3. インストール完了まで待つ
+### 2️⃣ GitHubアカウントの作成
+[GitHub](https://github.com/)でアカウントを作成してください。
 
-**Mac の場合:**
+**確認方法:**
 ```bash
-brew install ollama
+# ブラウザでGitHubにログインできることを確認
 ```
 
-または [公式サイト](https://ollama.com/download) からダウンロード
+### 3️⃣ Geminiへのアクセス確認
+[Google AI Studio](https://aistudio.google.com/)にアクセスしてGeminiが利用可能か確認してください。
 
-![インストール画面](./demo-image/image.png)
+**確認方法:**
+- Google AI StudioでAPIキーを取得可能か確認
 
-### gitのインストール
-https://git-scm.com/downloads/win
-
-#### powershellで確認
-git --version
-
-
-### 2️⃣ LLMモデルのダウンロード
-
-コマンドプロンプト/ターミナルで実行：
-
+### 4️⃣ WSL（Windows Subsystem for Linux）のインストール
+**管理者権限のPowerShellで実行:**
 ```bash
-# モデルをダウンロード（約2.2GB、時間がかかります）
+wsl --install
+```
+
+**初期設定:**
+1. Ubuntu初回起動時にユーザー名とパスワードを設定
+2. パッケージを更新:
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+**確認方法:**
+```bash
+wsl --version
+```
+
+### 5️⃣ Git設定（SSH接続でGitHubと連携）
+
+#### Gitユーザー情報の設定
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+#### SSHキーの生成
+```bash
+ssh-keygen -t rsa -b 4096 -C "you@example.com"
+```
+
+#### 公開鍵をGitHubに登録
+```bash
+cat ~/.ssh/id_rsa.pub
+```
+出力された公開鍵をGitHub → Settings → SSH and GPG keys → New SSH keyに登録
+
+**確認方法:**
+```bash
+ssh -T git@github.com
+```
+
+### 6️⃣ NVMのインストール
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+```
+
+**確認方法:**
+```bash
+nvm --version
+```
+
+### 7️⃣ Node.jsのインストール
+```bash
+nvm install --lts
+nvm use --lts
+```
+
+**確認方法:**
+```bash
+node -v
+npm -v
+```
+
+### 8️⃣ Gemini CLIのインストール・認証
+```bash
+pip install google-generativeai
+```
+
+**環境変数の設定:**
+```bash
+export GEMINI_API_KEY="あなたのAPIキー"
+```
+
+**確認方法:**
+```bash
+python -c "import google.generativeai as genai; print('Gemini CLI ready')"
+```
+
+### 9️⃣ Ollamaのインストール
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+**確認方法:**
+```bash
+ollama --version
+```
+
+### 🔟 Ollamaでモデルのインストール（phi3）
+```bash
 ollama pull phi3
-
-# モデルが正常に動作するかテスト
-ollama run phi3
+ollama pull nomic-embed-text
 ```
 
-![モデル実行画面](./demo-image/ollama.png)
+**確認方法:**
+```bash
+ollama list
+ollama run phi3 "Hello"
+```
 
-### 3️⃣ Python環境のセットアップ
+---
+
+## 🏃 実行手順
+
+### 1️⃣ Python環境のセットアップ
 
 ```bash
 # 仮想環境の作成
 python -m venv .venv
-
-#　管理者権限のpowershellで下だけ実行
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-
 
 # 仮想環境の有効化
 # Windows の場合:
@@ -76,10 +159,10 @@ source .venv/bin/activate
 # 例: (.venv) PS C:\Users\username\local_llm_ws>
 
 # 必要なライブラリをインストール
-pip install requests
+pip install requests google-generativeai
 ```
 
-### 4️⃣ サンプルプログラムの実行
+### 2️⃣ サンプルプログラムの実行
 
 ```bash
 # プログラムを実行
@@ -136,261 +219,3 @@ local_llm_ws/
 4. **応用課題** - オリジナル機能の実装
 
 準備完了したら講師にお声かけください！
-
-
-
----
-了解です！😊
-PowerShellで **`git clone`** を実行するためには、以下の準備が必要です。
-「初めてPowerShellでGitを使う」前提で、インストールから設定、SSH鍵まで詳しく解説します。
-
----
-
-## **全体の流れ**
-
-1. **Gitのインストール**
-2. **PowerShellでGitコマンドが使えるか確認**
-3. **ユーザー情報の設定（必須）**
-4. **SSHキーまたはHTTPS認証の準備**
-5. **`git clone` の実行**
-6. **トラブルシューティング**
-
----
-
-## **1. Gitのインストール**
-
-### **方法①：wingetでインストール（推奨）**
-
-Windows 10以降ならPowerShellから一発でインストールできます。
-
-```powershell
-winget install --id Git.Git -e --source winget
-```
-
-### **方法②：公式サイトからインストール**
-
-* [https://git-scm.com/download/win](https://git-scm.com/download/win)
-* インストーラーを実行 → 「Git BashをPATHに追加」にチェック ✅
-
----
-
-## **2. PowerShellでGitコマンドが使えるか確認**
-
-PowerShellを開いて以下を実行：
-
-```powershell
-git --version
-```
-
-* 例：`git version 2.46.0`
-  → 表示されればOK
-* 「`git` が認識されません」と出た場合 → PATH設定が必要なので、再インストール時に **“Add Git to PATH”** を有効にする
-
----
-
-## **3. ユーザー情報の設定（必須）**
-
-初めてGitを使う場合、ユーザー名とメールアドレスを設定します。
-
-```powershell
-git config --global user.name "Your Name"
-git config --global user.email "you@example.com"
-```
-
-設定を確認するには：
-
-```powershell
-git config --list
-```
-
----
-
-## **4. 認証方法の準備**
-
-### **① HTTPSでcloneする場合（簡単）**
-
-GitHubやGitLabのリポジトリURLをHTTPSで指定すれば、最初の一回だけユーザー名とパスワードを入力すればOK。
-
-例：
-
-```powershell
-git clone https://github.com/username/repo.git
-```
-
-ただし2021年以降、GitHubは**パスワード認証が廃止**されたため、**Personal Access Token (PAT)** を使う必要があります。
-
-PATの発行方法：
-
-* GitHub → **Settings** → **Developer settings** → **Personal access tokens**
-* 「repo」スコープを付与 → 発行されたトークンをHTTPSパスワードとして使う
-
----
-
-### **② SSHでcloneする場合（おすすめ）**
-
-#### **SSHキーを作成**
-
-```powershell
-ssh-keygen -t rsa -b 4096 -C "you@example.com"
-```
-
-Enterを3回押せば `C:\Users\<ユーザー名>\.ssh\id_rsa` に鍵が作られます。
-
-#### **公開鍵をGitHubに登録**
-
-```powershell
-cat ~/.ssh/id_rsa.pub
-```
-
-* 出てきたキーをコピー
-* GitHub → **Settings** → **SSH and GPG keys** → **New SSH key** → 貼り付け
-* cat ~/.ssh/id_ed25519.pub | clip　でもOK
-
-
-#### **SSH接続をテスト**
-
-```powershell
-ssh -T git@github.com
-```
-
-「Hi username! You’ve successfully authenticated」と出ればOK。
-
-#### **SSHでclone**
-
-```powershell
-git clone git@github.com:username/repo.git
-```
-
----
-
-## **5. git clone の実行**
-
-プロジェクトを保存したいディレクトリに移動して実行：
-
-```powershell
-cd C:\Users\YourName\Documents
-git clone https://github.com/username/repo.git
-```
-
-またはSSH版：
-
-```powershell
-git clone git@github.com:username/repo.git
-```
-
-cloneが終わったら移動：
-
-```powershell
-cd repo
-```
-
----
-
-## **6. トラブルシューティング**
-
-| エラー                             | 原因         | 対策                                               |
-| ------------------------------- | ---------- | ------------------------------------------------ |
-| `git: command not found`        | Git未インストール | wingetまたは公式サイトからインストール                           |
-| `Permission denied (publickey)` | SSHキー未設定   | SSHキーを生成＆GitHubに登録                               |
-| `Authentication failed`         | HTTPSで認証失敗 | PATを使う or SSH接続に切り替え                             |
-| `SSL certificate problem`       | 企業ネットワークなど | `git config --global http.sslVerify false`（自己責任） |
-
----
-
-## **まとめ**
-
-| 作業          | コマンド例                                            |
-| ----------- | ------------------------------------------------ |
-| Gitインストール   | `winget install --id Git.Git -e --source winget` |
-| バージョン確認     | `git --version`                                  |
-| ユーザー設定      | `git config --global user.name "Your Name"`      |
-| HTTPS clone | `git clone https://github.com/username/repo.git` |
-| SSH鍵生成      | `ssh-keygen -t rsa -b 4096 -C "you@example.com"` |
-| SSH clone   | `git clone git@github.com:username/repo.git`     |
-
----
-## wslのインストール
-``` bash
-wsl --install
-```
-## インストール後の初期設定
-
-Ubuntu初回起動時にユーザー名とパスワードを設定
-
-パッケージを更新：
-
-sudo apt update && sudo apt upgrade -y
-
-## ** Node.js が入っているか確認**
-
-WSLのターミナルで：
-
-```bash
-node -v
-```
-
-または：
-
-```bash
-node --version
-```
-
-複数バージョンを切り替えたい場合はnvmが最強です。
-
-#### **nvmをインストール**
-
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-source ~/.bashrc
-```
-
-#### **Node.jsをインストール**
-
-```bash
-nvm install --lts
-```
-
-確認：
-
-```bash
-node -v
-npm -v
-```
-
-#### **バージョン切り替え**
-
-```bash
-nvm list
-nvm use 18
-```
-
----
-
-nvmインストール前
-```bash
-Set-ExecutionPolicy RemoteSigned -Scope Process
-```
-実行コマンド
-```bash
-.\setup-node.ps1
-```
-
-nvmインストールリンク
-```
-https://github.com/coreybutler/nvm-windows/releases
-```
-```bash
-nvm install 20.11.1
-```
-
-
-### ollamaのembモデルをインストール
-```bash
-ollama pull nomic-embed-text
-```
-
-### geminiを使う
-```bash
-pip install google-generativeai
-$env:GEMINI_API_KEY="あなたのAPIキー"   # 毎回のセッションで設定 or .env等で永続化
-```
