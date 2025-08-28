@@ -309,6 +309,17 @@ cd repo
 | SSH clone   | `git clone git@github.com:username/repo.git`     |
 
 ---
+## wslのインストール
+``` bash
+wsl --install
+```
+## インストール後の初期設定
+
+Ubuntu初回起動時にユーザー名とパスワードを設定
+
+パッケージを更新：
+
+sudo apt update && sudo apt upgrade -y
 
 ## ** Node.js が入っているか確認**
 
