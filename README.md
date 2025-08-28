@@ -103,17 +103,17 @@ npm -v
 
 ### 8️⃣ Gemini CLIのインストール・認証
 ```bash
-pip install google-generativeai
+npx https://github.com/google-gemini/gemini-cli
 ```
 
-**環境変数の設定:**
+**PowerShellを一度閉じて、再起動後に以下のコマンドで起動:**
 ```bash
-export GEMINI_API_KEY="あなたのAPIキー"
+gemini
 ```
 
 **確認方法:**
 ```bash
-python -c "import google.generativeai as genai; print('Gemini CLI ready')"
+gemini --help
 ```
 
 ### 9️⃣ Ollamaのインストール
