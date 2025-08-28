@@ -383,3 +383,8 @@ https://github.com/coreybutler/nvm-windows/releases
 nvm install 20.11.1
 ```
 
+
+### ollamaのembモデルをインストール
+```bash
+ollama pull nomic-embed-text
+```
