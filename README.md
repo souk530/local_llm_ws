@@ -310,8 +310,48 @@ cd repo
 
 ---
 
-もし希望があれば、**PowerShell専用の自動セットアップスクリプト**を書いて、
-「Gitインストール → SSH鍵生成 → GitHub登録URLを開く → clone実行」まで自動化できます。
+## ** Node.js が入っているか確認**
 
-これ、やりますか？
+WSLのターミナルで：
+
+```bash
+node -v
+```
+
+または：
+
+```bash
+node --version
+```
+
+複数バージョンを切り替えたい場合はnvmが最強です。
+
+#### **nvmをインストール**
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+```
+
+#### **Node.jsをインストール**
+
+```bash
+nvm install --lts
+```
+
+確認：
+
+```bash
+node -v
+npm -v
+```
+
+#### **バージョン切り替え**
+
+```bash
+nvm list
+nvm use 18
+```
+
+---
 
