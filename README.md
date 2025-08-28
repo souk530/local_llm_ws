@@ -35,7 +35,7 @@ brew install ollama
 ![インストール画面](./demo-image/image.png)
 
 ### gitのインストール
-winget install --id Git.Git -e --source winget
+https://git-scm.com/downloads/win
 
 #### powershellで確認
 git --version
