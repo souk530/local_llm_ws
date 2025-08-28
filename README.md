@@ -244,6 +244,8 @@ cat ~/.ssh/id_rsa.pub
 
 * 出てきたキーをコピー
 * GitHub → **Settings** → **SSH and GPG keys** → **New SSH key** → 貼り付け
+* cat ~/.ssh/id_ed25519.pub | clip　でもOK
+
 
 #### **SSH接続をテスト**
 
