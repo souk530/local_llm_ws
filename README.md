@@ -388,3 +388,9 @@ nvm install 20.11.1
 ```bash
 ollama pull nomic-embed-text
 ```
+
+### geminiを使う
+```bash
+pip install google-generativeai
+$env:GEMINI_API_KEY="あなたのAPIキー"   # 毎回のセッションで設定 or .env等で永続化
+```
