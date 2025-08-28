@@ -54,6 +54,10 @@ ollama run phi3
 # 仮想環境の作成
 python -m venv .venv
 
+#　管理者権限のpowershellで下だけ実行
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+
 # 仮想環境の有効化
 # Windows の場合:
 .venv\Scripts\activate
