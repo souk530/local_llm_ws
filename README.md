@@ -105,6 +105,9 @@ npm -v
 ```bash
 npx https://github.com/google-gemini/gemini-cli
 ```
+```bash
+npm install -g @google/gemini-cli
+```
 
 **PowerShellを一度閉じて、再起動後に以下のコマンドで起動:**
 ```bash
